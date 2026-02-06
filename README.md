@@ -34,4 +34,4 @@ Proof of Concept:
 - Build a RAG (Retrieval-Augmented Generation) pipeline using LangChain + Gemini 1.5
 - Deploy a Streamlit chat interface where users can ask questions like "What skills are most in-demand for AI Engineers in Texas?" and receive data-grounded answers
 
-The POC demonstrates end-to-end data flow: raw data → processing → NLP enrichment → relational storage → intelligent querying.
+The POC demonstrates end-to-end data flow: **Raw Data → Processing → NLP enrichment → Relational Storage → Intelligent Querying**
