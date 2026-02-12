@@ -63,12 +63,6 @@
  * Output: NVARCHAR (e.g., Health Insurance, Paid Time Off)
  * Purpose: Remove curly braces and single quotes from benefits string for clean storage
 
-### fn_SplitSkills
- * Type: Table-Valued
- * Input: @skills_string NVARCHAR (e.g., HTML, CSS, JavaScript Frontend frameworks)
- * Output: TABLE(skill_name NVARCHAR(255))
- * Purpose: Split skills string into individual rows for insertion into bridge table, handling comma and newline delimiters
-
 ### fn_GetSkillCount
  * Type: Scalar
  * Input: @job_id BIGINT
