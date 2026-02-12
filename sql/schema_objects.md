@@ -126,10 +126,10 @@ Returns: @rows_affected INT
  * Purpose: Check if date exists, return existing date_id or insert new record with derived fields (year, month, day_of_week) and return new date_id
 
 ### sp_GetOrCreateSkill
- * Parameters: @skill_name NVARCHAR
- * Returns: @skill_id INT (OUTPUT)
- * Calls: None
- * Purpose: Check if skill exists by name, return existing skill_id or insert new record and return new skill_id
+* Parameters: @skill_name NVARCHAR(255), @skill_category NVARCHAR(255)
+* Returns: @skill_id INT (OUTPUT)
+* Calls: None
+* Purpose: Check if skill exists by name, return existing skill_id or insert new record with category and return new skill_id
 
 ### sp_InsertJobSkills
  * Parameters: @job_id BIGINT, @skills_string NVARCHAR
@@ -232,151 +232,151 @@ Returns: @rows_affected INT
 ## Indexes
 
 ### IX_Job_Company
-- **Table:** Job_Fact_Table
-- **Type:** Non-Clustered
-- **Columns:** company_id
-- **Include:** job_title, salary_min, salary_max, sentiment_label
-- **Purpose:** Optimize queries filtering jobs by company with commonly selected columns covered
+* Table: Job_Fact_Table
+* Type:** Non-Clustered
+* Columns: company_id
+* Include: job_title, salary_min, salary_max, sentiment_label
+* Purpose: Optimize queries filtering jobs by company with commonly selected columns covered
 
 ### IX_Job_Location
-- **Table:** Job_Fact_Table
-- **Type:** Non-Clustered
-- **Columns:** location_id
-- **Include:** job_title, work_type, salary_min, salary_max
-- **Purpose:** Optimize queries filtering jobs by location with commonly selected columns covered
+* Table: Job_Fact_Table
+* Type: Non-Clustered
+* Columns: location_id
+* Include: job_title, work_type, salary_min, salary_max
+* Purpose: Optimize queries filtering jobs by location with commonly selected columns covered
 
 ### IX_Job_Role
-- **Table:** Job_Fact_Table
-- **Type:** Non-Clustered
-- **Columns:** role_id
-- **Include:** job_title, experience, salary_min, salary_max
-- **Purpose:** Optimize queries filtering jobs by role with commonly selected columns covered
+* Table: Job_Fact_Table
+* Type: Non-Clustered
+* Columns: role_id
+* Include: job_title, experience, salary_min, salary_max
+* Purpose: Optimize queries filtering jobs by role with commonly selected columns covered
 
 ### IX_Job_Portal
-- **Table:** Job_Fact_Table
-- **Type:** Non-Clustered
-- **Columns:** portal_id
-- **Include:** job_title, company_id, date_id
-- **Purpose:** Optimize queries filtering jobs by portal source
+* Table: Job_Fact_Table
+* Type: Non-Clustered
+* Columns: portal_id
+* Include: job_title, company_id, date_id
+* Purpose: Optimize queries filtering jobs by portal source
 
 ### IX_Job_Date
-- **Table:** Job_Fact_Table
-- **Type:** Non-Clustered
-- **Columns:** date_id
-- **Include:** job_title, company_id, role_id
-- **Purpose:** Optimize queries filtering jobs by posting date range for trend analysis
+* Table: Job_Fact_Table
+* Type: Non-Clustered
+* Columns: date_id
+* Include: job_title, company_id, role_id
+* Purpose: Optimize queries filtering jobs by posting date range for trend analysis
 
 ### IX_Job_Sentiment
-- **Table:** Job_Fact_Table
-- **Type:** Non-Clustered
-- **Columns:** sentiment_label
-- **Include:** job_title, company_id, role_id
-- **Purpose:** Optimize queries filtering jobs by sentiment classification
+* Table: Job_Fact_Table
+* Type: Non-Clustered
+* Columns: sentiment_label
+* Include: job_title, company_id, role_id
+* Purpose: Optimize queries filtering jobs by sentiment classification
 
 ### IX_Job_WorkType
-- **Table:** Job_Fact_Table
-- **Type:** Non-Clustered
-- **Columns:** work_type
-- **Include:** job_title, salary_min, salary_max, location_id
-- **Purpose:** Optimize queries filtering jobs by work type (Full-time, Part-time, Intern, etc.)
+* Table: Job_Fact_Table
+* Type: Non-Clustered
+* Columns: work_type
+* Include: job_title, salary_min, salary_max, location_id
+* Purpose: Optimize queries filtering jobs by work type (Full-time, Part-time, Intern, etc.)
 
 ### IX_Bridge_Job
-- **Table:** Job_Skill_Bridge_Table
-- **Type:** Non-Clustered
-- **Columns:** job_id
-- **Include:** skill_id
-- **Purpose:** Optimize lookups of all skills for a specific job (used by vw_JobWithSkills)
+* Table: Job_Skill_Bridge_Table
+* Type: Non-Clustered
+* Columns: job_id
+* Include: skill_id
+* Purpose: Optimize lookups of all skills for a specific job (used by vw_JobWithSkills)
 
 ### IX_Bridge_Skill
-- **Table:** Job_Skill_Bridge_Table
-- **Type:** Non-Clustered
-- **Columns:** skill_id
-- **Include:** job_id
-- **Purpose:** Optimize lookups of all jobs requiring a specific skill (used by vw_SkillDemand)
+* Table: Job_Skill_Bridge_Table
+* Type: Non-Clustered
+* Columns: skill_id
+* Include: job_id
+* Purpose: Optimize lookups of all jobs requiring a specific skill (used by vw_SkillDemand)
 
 ### IX_Company_Name
-- **Table:** Company_Dimension_Table
-- **Type:** Non-Clustered Unique
-- **Columns:** company_name
-- **Include:** company_size
-- **Purpose:** Optimize company lookup by name in sp_GetOrCreateCompany and enforce uniqueness
+* Table: Company_Dimension_Table
+* Type: Non-Clustered Unique
+* Columns: company_name
+* Include: company_size
+* Purpose: Optimize company lookup by name in sp_GetOrCreateCompany and enforce uniqueness
 
 ### IX_Location_CityCountry
-- **Table:** Location_Dimension_Table
-- **Type:** Non-Clustered Unique
-- **Columns:** city, country
-- **Include:** latitude, longitude
-- **Purpose:** Optimize location lookup by city and country combination in sp_GetOrCreateLocation and enforce uniqueness
+* Table: Location_Dimension_Table
+* Type: Non-Clustered Unique
+* Columns: city, country
+* Include: latitude, longitude
+* Purpose: Optimize location lookup by city and country combination in sp_GetOrCreateLocation and enforce uniqueness
 
 ### IX_Role_Name
-- **Table:** Role_Dimension_Table
-- **Type:** Non-Clustered Unique
-- **Columns:** role_name
-- **Purpose:** Optimize role lookup by name in sp_GetOrCreateRole and enforce uniqueness
+* Table: Role_Dimension_Table
+* Type: Non-Clustered Unique
+* Columns: role_name
+* Purpose: Optimize role lookup by name in sp_GetOrCreateRole and enforce uniqueness
 
 ### IX_Portal_Name
-- **Table:** Portal_Dimension_Table
-- **Type:** Non-Clustered Unique
-- **Columns:** portal_name
-- **Purpose:** Optimize portal lookup by name in sp_GetOrCreatePortal and enforce uniqueness
+* Table: Portal_Dimension_Table
+* Type: Non-Clustered Unique
+* Columns: portal_name
+* Purpose: Optimize portal lookup by name in sp_GetOrCreatePortal and enforce uniqueness
 
 ### IX_Skill_Name
-- **Table:** Skill_Dimension_Table
-- **Type:** Non-Clustered Unique
-- **Columns:** skill_name
-- **Purpose:** Optimize skill lookup by name in sp_GetOrCreateSkill and enforce uniqueness
+* Table: Skill_Dimension_Table
+* Type: Non-Clustered Unique
+* Columns: skill_name
+* Purpose: Optimize skill lookup by name in sp_GetOrCreateSkill and enforce uniqueness
 
 ### IX_Date_FullDate
-- **Table:** Date_Dimension_Table
-- **Type:** Non-Clustered Unique
-- **Columns:** full_date
-- **Purpose:** Optimize date lookup by full_date in sp_GetOrCreateDate and enforce uniqueness
+* Table: Date_Dimension_Table
+* Type: Non-Clustered Unique
+* Columns: full_date
+* Purpose: Optimize date lookup by full_date in sp_GetOrCreateDate and enforce uniqueness
 
 ### IX_Date_YearMonth
-- **Table:** Date_Dimension_Table
-- **Type:** Non-Clustered
-- **Columns:** year, month
-- **Include:** date_id, full_date
-- **Purpose:** Optimize queries filtering by year and month for trend analysis
+* Table: Date_Dimension_Table
+* Type: Non-Clustered
+* Columns: year, month
+* Include: date_id, full_date
+* Purpose: Optimize queries filtering by year and month for trend analysis
 
 ### IX_KeyPhrase_Job
-- **Table:** Job_Key_Phrase_Table
-- **Type:** Non-Clustered
-- **Columns:** job_id
-- **Include:** phrase, source_field
-- **Purpose:** Optimize lookup of all key phrases for a specific job
+* Table: Job_Key_Phrase_Table
+* Type: Non-Clustered
+* Columns: job_id
+* Include: phrase, source_field
+* Purpose: Optimize lookup of all key phrases for a specific job
 
 ### IX_KeyPhrase_Phrase
-- **Table:** Job_Key_Phrase_Table
-- **Type:** Non-Clustered
-- **Columns:** phrase
-- **Include:** job_id
-- **Purpose:** Optimize search for jobs containing a specific key phrase
+* Table: Job_Key_Phrase_Table
+* Type: Non-Clustered
+* Columns: phrase
+* Include: job_id
+* Purpose: Optimize search for jobs containing a specific key phrase
 
 ### IX_Entity_Job
-- **Table:** Job_Entity_Table
-- **Type:** Non-Clustered
-- **Columns:** job_id
-- **Include:** entity_name, entity_type, confidence
-- **Purpose:** Optimize lookup of all entities for a specific job
+* Table: Job_Entity_Table
+* Type: Non-Clustered
+* Columns: job_id
+* Include: entity_name, entity_type, confidence
+* Purpose: Optimize lookup of all entities for a specific job
 
 ### IX_Entity_Type
-- **Table:** Job_Entity_Table
-- **Type:** Non-Clustered
-- **Columns:** entity_type
-- **Include:** job_id, entity_name
-- **Purpose:** Optimize filtering entities by type (e.g., Organization, Location, Person)
+* Table: Job_Entity_Table
+* Type: Non-Clustered
+* Columns: entity_type
+* Include: job_id, entity_name
+* Purpose: Optimize filtering entities by type (e.g., Organization, Location, Person)
 
 ### IX_Audit_Table
-- **Table:** Audit_Log_Table
-- **Type:** Non-Clustered
-- **Columns:** table_name
-- **Include:** operation, record_id, changed_at
-- **Purpose:** Optimize audit queries filtering by table name
+* Table: Audit_Log_Table
+* Type: Non-Clustered
+* Columns: table_name
+* Include: operation, record_id, changed_at
+* Purpose: Optimize audit queries filtering by table name
 
 ### IX_Audit_Date
-- **Table:** Audit_Log_Table
-- **Type:** Non-Clustered
-- **Columns:** changed_at
-- **Include:** table_name, operation, record_id
-- **Purpose:** Optimize audit queries filtering by date range
+* Table: Audit_Log_Table
+* Type: Non-Clustered
+* Columns: changed_at
+* Include: table_name, operation, record_id
+* Purpose: Optimize audit queries filtering by date range
