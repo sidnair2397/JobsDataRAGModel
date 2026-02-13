@@ -1,3 +1,4 @@
 /*
 This file contains the SQL code for creating triggers in the database. 
 */
+
