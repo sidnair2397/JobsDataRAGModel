@@ -1,6 +1,5 @@
 /* 
-SCALAR FUNCTIONS
-Utility functions for data cleaning and parsing.
+This file contains all the functions needed for the project
 */
 
 -- Parse Minimum Salary: "$59K-$99K" -> 59000.00

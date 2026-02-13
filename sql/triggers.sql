@@ -1,3 +1,3 @@
 /*
-This file contains the SQL code for creating triggers in the database. Triggers are special procedures that are automatically executed in response to certain events on a particular table.
+This file contains the SQL code for creating triggers in the database. 
 */

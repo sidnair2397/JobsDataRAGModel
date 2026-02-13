@@ -6,9 +6,10 @@ Tables that are referenced by the fact table.
 -- Company Dimension
 CREATE TABLE Company_Dimension_Table (
     company_id INT IDENTITY(1,1) PRIMARY KEY,   -- Primary Key, Auto-increment
-    company_name NVARCHAR(255) NOT NULL,                 -- Assuming standard name length
+    company_name NVARCHAR(255) NOT NULL,        -- Assuming standard name length
     company_size INT,
     company_profile NVARCHAR(MAX)               -- MAX used for potentially long descriptions
+    CONSTRAINT UQ_CompanyName UNIQUE (company_name)
 );
 
 -- Location Dimension
