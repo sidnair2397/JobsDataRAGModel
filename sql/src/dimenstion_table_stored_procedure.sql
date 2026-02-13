@@ -1,5 +1,6 @@
 /*
-This file contains the SQL code for the stored procedure in the database. 
+This file contains the SQL code for the stored procedure for the dimension tables in the database.
+I will not delete any records as that is considered bad practice and all attempts to do so will be automatically rejected 
 */
 
 -- Dimension Table Stored Procedure (GetOrCreate)
