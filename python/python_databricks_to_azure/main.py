@@ -22,7 +22,7 @@ def authenticate_client():
 
 def main():
     '''
-    Main function to authenticate the client and perform text analytics operations.
+    Main function.
     '''
     try:
         client = authenticate_client()
