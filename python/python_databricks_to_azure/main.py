@@ -16,10 +16,7 @@ def authenticate_client():
     endpoint = os.getenv("LanguageServiceEndpoint")
     api_key = os.getenv("LanguageServiceAPI")
     
-    if endpoint and api_key:
-        print("Successfully loaded environment variables.")
-        
-    else:
+    if not endpoint or not api_key:
         raise ValueError("Please set the LanguageServiceEndpoint and LanguageServiceAPI in the .env file.")
 
 
