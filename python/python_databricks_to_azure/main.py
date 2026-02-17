@@ -74,7 +74,7 @@ def random_df_split(df, numrows:int):
     return df.sample(n=numrows, random_state=42)
 
 
-def analyze_sentiment(azure_client, df, text_column, batch_size=10):
+def analyze_sentiment(azure_client, df, text_column, batch_size=5):
     '''
     Analyzes sentiment for text in a DataFrame column using Azure Text Analytics.
     
@@ -134,7 +134,7 @@ def analyze_sentiment(azure_client, df, text_column, batch_size=10):
     return df
 
 
-def extract_key_phrases(azure_client, df, text_column, batch_size=10):
+def extract_key_phrases(azure_client, df, text_column, batch_size=5):
     '''
     Extracts key phrases from text in a DataFrame column using Azure Text Analytics.
     
@@ -179,7 +179,7 @@ def extract_key_phrases(azure_client, df, text_column, batch_size=10):
     return pd.DataFrame(results)
 
 
-def recognize_entities(azure_client, df, text_column, batch_size=10):
+def recognize_entities(azure_client, df, text_column, batch_size=5):
     '''
     Recognizes named entities from text in a DataFrame column using Azure Text Analytics.
     
@@ -309,12 +309,43 @@ def main():
     
     #Randomly sample 100 rows from the DataFrame
     try:
-        df_sample = random_df_split(df, 100)
-        print("Random sample of 100 rows:")
-        print(df_sample.head())
+        df_sample = random_df_split(df, 20)
+        #print("Random sample of 20 rows:")
+        #print(df_sample.head())
     except Exception as e:
         print(f"An error occurred while sampling: {e}")
 
+    # Run all NLP analyses
+    try:
+        df_with_sentiment, df_key_phrases, df_entities = run_all_nlp_analysis(
+            azure_client=azure_client,
+            df=df_sample,
+            text_column='Job Description'  # Adjust if column name differs
+        )
+    except Exception as e:
+        print(f"An error occurred during NLP analysis: {e}")
+        return
+
+    # Display sample results
+    print("\n" + "=" * 50)
+    print("SAMPLE RESULTS")
+    print("=" * 50)
+    
+    print("\n--- Sentiment Analysis (Top 5) ---")
+    print(df_with_sentiment[['Job Id', 'Job Title', 'sentiment_score', 'sentiment_label']].head())
+    
+    print("\n--- Key Phrases (Top 10) ---")
+    print(df_key_phrases.head(10))
+    
+    print("\n--- Entities (Top 10) ---")
+    print(df_entities.head(10))
+
+    # Print transaction usage estimate
+    total_transactions = len(df_sample) * 3  # sentiment + key phrases + entities
+    print(f"\n--- Azure Transaction Usage ---")
+    print(f"Documents processed: {len(df_sample)}")
+    print(f"Estimated transactions used: {total_transactions}")
+    print(f"Free tier remaining: ~{5000 - total_transactions} transactions")
 
 if __name__ == "__main__":
     main()
