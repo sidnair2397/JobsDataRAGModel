@@ -26,6 +26,7 @@ def main():
     '''
     try:
         client = authenticate_client()
+        print("Client authenticated successfully.")
         
     except Exception as e:
         print(f"An error occurred: {e}")
