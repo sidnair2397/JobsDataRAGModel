@@ -4,6 +4,7 @@ Docstring for python.python_databricks_to_azure.main
 import os
 import databricks.sdk as databricks
 import pandas as pd
+import pyodbc
 from dotenv import load_dotenv
 from databricks import sql
 from azure.ai.textanalytics import TextAnalyticsClient
@@ -37,6 +38,37 @@ def authenticate_databricks_client():
         raise ValueError("Failed to authenticate with Databricks. Please check your credentials in the .env file.")
     
     return w
+
+
+def connect_to_sql_server():
+    '''
+    Connects to SQL Server using credentials from .env file.
+    
+    Returns:
+    pyodbc.Connection: An active SQL Server connection.
+    '''
+    load_dotenv()
+    
+    server = os.getenv("SQL_SERVER")
+    database = os.getenv("SQL_DATABASE")
+    username = os.getenv("SQL_USERNAME")
+    password = os.getenv("SQL_PASSWORD")
+    
+    # Validate credentials exist
+    if not all([server, database, username, password]):
+        raise ValueError("Missing SQL Server credentials in .env file.")
+    
+    # Build connection string
+    connection_string = (
+        f"DRIVER={{ODBC Driver 18 for SQL Server}};"
+        f"SERVER={server};"
+        f"DATABASE={database};"
+        f"UID={username};"
+        f"PWD={password};"
+        f"TrustServerCertificate=yes;"
+    )
+    
+    return pyodbc.connect(connection_string)
 
 
 def load_data_from_databricks(catalog_name, schema_name, table_name):
@@ -291,61 +323,86 @@ def main():
     except Exception as e:
         print(f"An error occurred: {e}")
 
-    #Load data from Databricks and return the first few rows
+    
+    # Authenticate SQL Server connection and test it by running a simple query to get the SQL Server version
     try:
-        catalog_name = "workspace"  
-        schema_name = "default"    
-        table_name = "job_descriptions"      
+        sql_conn = connect_to_sql_server()
+        print(f"SQL Server connected successfully.")
         
-        df = load_data_from_databricks(catalog_name, schema_name, table_name)
-
-        if df.empty:
-            print("The DataFrame is empty. Please check the table name and ensure it contains data.")
-        else:
-            print("Data loaded successfully from Databricks.")
-    
+        # Quick test query
+        cursor = sql_conn.cursor()
+        cursor.execute("SELECT @@VERSION")
+        version = cursor.fetchone()[0]
+        print(f"SQL Server Version: {version[:50]}...")
+        
+        sql_conn.close()
     except Exception as e:
-        print(f"An error occurred: {e}")
-    
-    #Randomly sample 100 rows from the DataFrame
-    try:
-        df_sample = random_df_split(df, 20)
-        #print("Random sample of 20 rows:")
-        #print(df_sample.head())
-    except Exception as e:
-        print(f"An error occurred while sampling: {e}")
+        print(f"SQL Server connection failed: {e}")
 
-    # Run all NLP analyses
-    try:
-        df_with_sentiment, df_key_phrases, df_entities = run_all_nlp_analysis(
-            azure_client=azure_client,
-            df=df_sample,
-            text_column='Job Description'  # Adjust if column name differs
-        )
-    except Exception as e:
-        print(f"An error occurred during NLP analysis: {e}")
-        return
+    #Load data from Databricks and return the first few rows
+    # try:
+    #     catalog_name = "workspace"  
+    #     schema_name = "default"    
+    #     table_name = "job_descriptions"      
+        
+    #     df = load_data_from_databricks(catalog_name, schema_name, table_name)
 
-    # Display sample results
-    print("\n" + "=" * 50)
-    print("SAMPLE RESULTS")
-    print("=" * 50)
+    #     if df.empty:
+    #         print("The DataFrame is empty. Please check the table name and ensure it contains data.")
+    #     else:
+    #         print("Data loaded successfully from Databricks.")
     
-    print("\n--- Sentiment Analysis (Top 5) ---")
-    print(df_with_sentiment[['Job Id', 'Job Title', 'sentiment_score', 'sentiment_label']].head())
+    # except Exception as e:
+    #     print(f"An error occurred: {e}")
     
-    print("\n--- Key Phrases (Top 10) ---")
-    print(df_key_phrases.head(10))
-    
-    print("\n--- Entities (Top 10) ---")
-    print(df_entities.head(10))
+    # #Randomly sample 100 rows from the DataFrame
+    # try:
+    #     df_sample = random_df_split(df, 20)
+    #     #print("Random sample of 20 rows:")
+    #     #print(df_sample.head())
+    # except Exception as e:
+    #     print(f"An error occurred while sampling: {e}")
 
-    # Print transaction usage estimate
-    total_transactions = len(df_sample) * 3  # sentiment + key phrases + entities
-    print(f"\n--- Azure Transaction Usage ---")
-    print(f"Documents processed: {len(df_sample)}")
-    print(f"Estimated transactions used: {total_transactions}")
-    print(f"Free tier remaining: ~{5000 - total_transactions} transactions")
+    # # Run all NLP analyses
+    # try:
+    #     df_with_sentiment, df_key_phrases, df_entities = run_all_nlp_analysis(
+    #         azure_client=azure_client,
+    #         df=df_sample,
+    #         text_column='Job Description'  
+    #     )
+    # except Exception as e:
+    #     print(f"An error occurred during NLP analysis: {e}")
+    #     return
+
+    # # Display sample results
+    # print("\n" + "=" * 50)
+    # print("SAMPLE RESULTS")
+    # print("=" * 50)
+    
+    # print("\n--- Sentiment Analysis (Top 5) ---")
+    # print(df_with_sentiment[['Job Id', 'Job Title', 'sentiment_score', 'sentiment_label']].head())
+    
+    # print("\n--- Key Phrases (Top 10) ---")
+    # print(df_key_phrases.head(10))
+    
+    # print("\n--- Entities (Top 10) ---")
+    # print(df_entities.head(10))
+
+    # # Save results to CSV
+    # try:
+    #     df_with_sentiment.to_csv("output/jobs_with_sentiment.csv", index=False)
+    #     df_key_phrases.to_csv("output/job_key_phrases.csv", index=False)
+    #     df_entities.to_csv("output/job_entities.csv", index=False)
+    #     print("\nResults saved to output/ folder.")
+    # except Exception as e:
+    #     print(f"An error occurred while saving: {e}")        
+
+    # # Print transaction usage estimate
+    # total_transactions = len(df_sample) * 3  # sentiment + key phrases + entities
+    # print(f"\n--- Azure Transaction Usage ---")
+    # print(f"Documents processed: {len(df_sample)}")
+    # print(f"Estimated transactions used: {total_transactions}")
+    # print(f"Free tier remaining: ~{5000 - total_transactions} transactions")
 
 if __name__ == "__main__":
     main()
