@@ -67,4 +67,21 @@ END;
 GO
 
 
+-- Create fn_SplitSkills
+CREATE OR ALTER FUNCTION fn_SplitSkills(@skills_string NVARCHAR(MAX))
+RETURNS @Skills TABLE (skill_name NVARCHAR(255))
+AS
+BEGIN
+    IF @skills_string IS NULL OR LEN(TRIM(@skills_string)) = 0
+        RETURN;
+    
+    INSERT INTO @Skills (skill_name)
+    SELECT TRIM(value) AS skill_name
+    FROM STRING_SPLIT(@skills_string, ',')
+    WHERE LEN(TRIM(value)) > 0;
+    
+    RETURN;
+END;
+GO
+
 
