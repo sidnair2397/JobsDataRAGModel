@@ -400,6 +400,48 @@ def upsert_job_to_sql(conn, row, df_key_phrases, df_entities):
     return job_id
 
 
+def load_all_jobs_to_sql(conn, df_with_sentiment, df_key_phrases, df_entities):
+    '''
+    Loads all jobs from the DataFrame into SQL Server.
+    
+    Parameters:
+    conn (pyodbc.Connection): Active SQL Server connection.
+    df_with_sentiment (pd.DataFrame): Jobs DataFrame with sentiment columns.
+    df_key_phrases (pd.DataFrame): Key phrases DataFrame.
+    df_entities (pd.DataFrame): Entities DataFrame.
+    
+    Returns:
+    tuple: (success_count, error_count)
+    '''
+    total_jobs = len(df_with_sentiment)
+    success_count = 0
+    error_count = 0
+    
+    print(f"\nProcessing {total_jobs} jobs...")
+    print("-" * 50)
+    
+    for idx, row in df_with_sentiment.iterrows():
+        job_id = row['Job Id']
+        job_title = row.get('Job Title', 'Unknown')
+        
+        try:
+            upsert_job_to_sql(conn, row, df_key_phrases, df_entities)
+            success_count += 1
+            
+            # Progress indicator every 10 jobs
+            if success_count % 10 == 0:
+                print(f"  ✓ Processed {success_count}/{total_jobs} jobs...")
+                
+        except Exception as e:
+            error_count += 1
+            print(f"  ✗ Error on job {job_id} ({job_title}): {e}")
+            conn.rollback()
+    
+    print("-" * 50)
+    print(f"Complete! Success: {success_count}, Errors: {error_count}")
+    
+    return success_count, error_count
+
 
 def main():
     '''
@@ -467,11 +509,10 @@ def main():
     except Exception as e:
         print(f"An error occurred: {e}")
     
-    #Randomly sample 100 rows from the DataFrame
+    #Randomly sample 1500 rows from the DataFrame
     try:
-        df_sample = random_df_split(df, 20)
-        #print("Random sample of 20 rows:")
-        #print(df_sample.head())
+        df_sample = random_df_split(df, 1500)
+
     except Exception as e:
         print(f"An error occurred while sampling: {e}")
 #########################END DATA LOADING############################
@@ -506,33 +547,47 @@ def main():
 
 ##################STORE RESULTS AND PRINT USAGE ESTIMATE#############
 
-    # Test: Insert ONE job to SQL Server
+    # Load ALL jobs to SQL Server
     try:
         sql_conn = connect_to_sql_server()
-        print("SQL Server connected successfully.")
+        print("\nSQL Server connected successfully.")
         
-        # Get first row from sample
-        test_row = df_with_sentiment.iloc[0]
-        print(f"\nInserting test job: {test_row['Job Id']} - {test_row['Job Title']}")
+        # Load all jobs
+        success, errors = load_all_jobs_to_sql(
+            sql_conn, 
+            df_with_sentiment, 
+            df_key_phrases, 
+            df_entities
+        )
         
-        # Upsert the job
-        upsert_job_to_sql(sql_conn, test_row, df_key_phrases, df_entities)
-        print("Job inserted successfully!")
-        
-        # Verify by querying back
+        # Verify counts in database
         cursor = sql_conn.cursor()
-        cursor.execute("SELECT job_id, job_title, sentiment_label FROM Job_Fact_Table WHERE job_id = ?", (test_row['Job Id'],))
-        result = cursor.fetchone()
         
-        if result:
-            print(f"Verified in DB: job_id={result[0]}, title={result[1]}, sentiment={result[2]}")
-        else:
-            print("Warning: Job not found in database after insert.")
+        cursor.execute("SELECT COUNT(*) FROM Job_Fact_Table")
+        job_count = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM Job_Skill_Bridge_Table")
+        skill_count = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM Job_Key_Phrase_Table")
+        phrase_count = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM Job_Entity_Table")
+        entity_count = cursor.fetchone()[0]
+        
+        print("\n" + "=" * 50)
+        print("DATABASE SUMMARY")
+        print("=" * 50)
+        print(f"  Jobs:        {job_count}")
+        print(f"  Skills:      {skill_count}")
+        print(f"  Key Phrases: {phrase_count}")
+        print(f"  Entities:    {entity_count}")
+        print("=" * 50)
         
         sql_conn.close()
         
     except Exception as e:
-        print(f"Error inserting job: {e}")
+        print(f"Error loading to SQL Server: {e}")
 
 
 if __name__ == "__main__":
